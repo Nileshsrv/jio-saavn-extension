@@ -1,0 +1,736 @@
+/* ==========================================================================
+   Saavn Modern v2.1 — Spotify + Apple Music + Linear + Arc Design System
+   Scoped to html.jsl-theme-on so users can toggle live from the extension.
+   Safe, non-destructive, GPU-composited transitions.
+   ========================================================================== */
+
+:root {
+  /* Core Surfaces (Linear-inspired neutral darks) */
+  --sn-bg-root: #090a0e;
+  --sn-bg-surface: #0e1016;
+  --sn-bg-surface-elevated: #161821;
+  --sn-bg-surface-popover: rgba(20, 22, 30, 0.96);
+  --sn-bg-surface-hover: rgba(255, 255, 255, 0.075);
+  --sn-bg-surface-active: rgba(255, 255, 255, 0.12);
+  --sn-bg-glass: rgba(10, 11, 15, 0.8);
+  --sn-bg-glass-player: rgba(11, 12, 17, 0.92);
+  --sn-bg-glass-card: rgba(255, 255, 255, 0.032);
+  --sn-bg-glass-card-hover: rgba(255, 255, 255, 0.078);
+
+  /* Accents */
+  --sn-accent-green: #1ed760;
+  --sn-accent-teal: #2bc5b4;
+  --sn-accent-active: var(--jsl-accent, #2bc5b4);
+  --sn-accent-gradient: linear-gradient(90deg, #1ed760 0%, var(--jsl-accent, #2bc5b4) 100%);
+  --sn-glow-teal: rgba(43, 197, 180, 0.3);
+
+  /* Crisp Hairlines */
+  --sn-border: rgba(255, 255, 255, 0.07);
+  --sn-border-light: rgba(255, 255, 255, 0.13);
+  --sn-border-focus: rgba(43, 197, 180, 0.65);
+
+  /* Typography */
+  --sn-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+  --sn-text-primary: #f5f7fa;
+  --sn-text-secondary: rgba(245, 247, 250, 0.7);
+  --sn-text-muted: rgba(245, 247, 250, 0.46);
+
+  /* Restrained Shadows */
+  --sn-shadow-card: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --sn-shadow-card-hover: 0 18px 42px -10px rgba(0, 0, 0, 0.75);
+  --sn-shadow-dock: 0 -12px 40px rgba(0, 0, 0, 0.68);
+  --sn-shadow-floating: 0 24px 60px -12px rgba(0, 0, 0, 0.85);
+
+  /* Radii & Fluid Easing */
+  --sn-radius-sm: 8px;
+  --sn-radius-md: 12px;
+  --sn-radius-lg: 16px;
+  --sn-radius-pill: 999px;
+  --sn-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sn-trans-fast: 0.18s var(--sn-ease);
+  --sn-trans-medium: 0.28s var(--sn-ease);
+}
+
+/* --------------------------------------------------------------------------
+   Global Shell, Smooth Panel Reflow & Cover-Art Ambiance
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on {
+  color-scheme: dark;
+  background-color: var(--sn-bg-root) !important;
+}
+
+html.jsl-theme-on body {
+  font-family: var(--sn-font) !important;
+  background-color: var(--sn-bg-root) !important;
+  color: var(--sn-text-primary) !important;
+  overflow-x: hidden !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+/* Smoothly animate body width when opening/closing the lyrics drawer */
+html.jsl-open:not(.jsl-resizing) body {
+  transition: width 0.32s var(--sn-ease) !important;
+}
+html:not(.jsl-open):not(.jsl-resizing) body {
+  transition: width 0.28s var(--sn-ease) !important;
+}
+
+/* Apple Music-inspired ambient artwork glow at top of viewport */
+html.jsl-theme-on.jsl-ambiance-on.jsl-has-track body::before {
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 0 auto 0 !important;
+  height: 48vh !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  background:
+    radial-gradient(60% 85% at 24% 0%, color-mix(in srgb, var(--jsl-glow1, #1f7d73) 20%, transparent), transparent 72%),
+    radial-gradient(50% 75% at 76% 0%, color-mix(in srgb, var(--jsl-glow2, #1c5a6e) 15%, transparent), transparent 72%) !important;
+  transition: opacity 0.8s ease !important;
+}
+
+/* Normalize light/grey page wrappers & utility classes */
+html.jsl-theme-on .c-main,
+html.jsl-theme-on .o-page,
+html.jsl-theme-on .o-layout,
+html.jsl-theme-on .o-wrapper,
+html.jsl-theme-on .u-bg-white,
+html.jsl-theme-on .u-bg-light,
+html.jsl-theme-on .u-bg-grey,
+html.jsl-theme-on [class*="u-bg-light"] {
+  background-color: transparent !important;
+  color: var(--sn-text-primary) !important;
+}
+
+/* Force readable text for JioSaavn dark-gray/black utility classes */
+html.jsl-theme-on .u-color-js-gray-dark,
+html.jsl-theme-on .u-color-js-black,
+html.jsl-theme-on .u-color-js-dark,
+html.jsl-theme-on [data-jsl-ink="dark"] {
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on .u-color-js-gray,
+html.jsl-theme-on .u-subhead,
+html.jsl-theme-on .c-card__subtitle,
+html.jsl-theme-on .o-snippet__subtitle {
+  color: var(--sn-text-secondary) !important;
+}
+
+/* Adaptive Light-Surface Normalizer (catches dynamic queues, list rows & modals) */
+html.jsl-theme-on [data-jsl-surface="light"] {
+  background-color: var(--sn-bg-surface-elevated) !important;
+  background-image: none !important;
+  color: var(--sn-text-primary) !important;
+  border-color: var(--sn-border-light) !important;
+}
+html.jsl-theme-on li[data-jsl-surface="light"] {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Typography Hierarchy
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on h1,
+html.jsl-theme-on .u-h1,
+html.jsl-theme-on .o-page-header__title {
+  font-family: var(--sn-font) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.028em !important;
+  line-height: 1.14 !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on h2,
+html.jsl-theme-on .u-h2,
+html.jsl-theme-on .c-heading__title {
+  font-family: var(--sn-font) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.24 !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on h3,
+html.jsl-theme-on .u-h3 {
+  font-family: var(--sn-font) !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.012em !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on a {
+  color: inherit;
+  transition: color var(--sn-trans-fast);
+}
+
+/* Minimalist Scrollbars */
+html.jsl-theme-on ::-webkit-scrollbar {
+  width: 7px !important;
+  height: 7px !important;
+}
+html.jsl-theme-on ::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+html.jsl-theme-on ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-radius: var(--sn-radius-pill) !important;
+  transition: background-color var(--sn-trans-fast) !important;
+}
+html.jsl-theme-on ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.34) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Safely Hide Ads, Promo Banners & Clutter (when jsl-clean-on is active)
+   CRITICAL: Never target generic .banner or root page wrappers!
+   -------------------------------------------------------------------------- */
+html.jsl-clean-on div.c-banner.active,
+html.jsl-clean-on div.c-banner,
+html.jsl-clean-on .c-ad,
+html.jsl-clean-on .c-ad--fixed,
+html.jsl-clean-on .c-ad--showcase,
+html.jsl-clean-on .c-player__ad,
+html.jsl-clean-on #ads-player,
+html.jsl-clean-on .c-footer__app,
+html.jsl-clean-on .c-upsell {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+html.jsl-theme-on.jsl-clean-on .c-footer {
+  background: transparent !important;
+  border-top: 1px solid var(--sn-border) !important;
+  opacity: 0.68 !important;
+  padding-top: 28px !important;
+  padding-bottom: 100px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Top Navigation Header (Apple Music Frosted Glass)
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on .c-header,
+html.jsl-theme-on .c-header.c-header--basic,
+html.jsl-theme-on .c-header.c-header--locked {
+  background: var(--sn-bg-glass) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  border-bottom: 1px solid var(--sn-border) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.38) !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on .c-logo {
+  color: #ffffff !important;
+}
+html.jsl-theme-on .c-logo svg {
+  transition: transform var(--sn-trans-fast), filter var(--sn-trans-fast) !important;
+}
+/* Keep the teal emblem untouched; lift only dark wordmark paths/text to crisp white */
+html.jsl-theme-on .c-logo svg text,
+html.jsl-theme-on .c-logo span,
+html.jsl-theme-on .c-logo svg [data-jsl-ink="dark"] {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+html.jsl-theme-on .c-logo:hover svg {
+  transform: scale(1.04) !important;
+  filter: drop-shadow(0 0 10px var(--sn-glow-teal)) !important;
+}
+
+html.jsl-theme-on .c-header .c-main-menu .c-nav__link,
+html.jsl-theme-on .c-header .c-nav__link {
+  font-family: var(--sn-font) !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--sn-text-secondary) !important;
+  padding: 7px 14px !important;
+  border-radius: var(--sn-radius-pill) !important;
+  border: 1px solid transparent !important;
+  transition: color var(--sn-trans-fast), background-color var(--sn-trans-fast), border-color var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-header .c-main-menu .c-nav__link:hover,
+html.jsl-theme-on .c-header .c-nav__link:hover {
+  color: #ffffff !important;
+  background: var(--sn-bg-surface-hover) !important;
+  border-color: var(--sn-border) !important;
+}
+
+html.jsl-theme-on .c-header .c-main-menu .c-nav__link.active,
+html.jsl-theme-on .c-header .c-nav__link.active {
+  color: #ffffff !important;
+  background: var(--sn-bg-surface-active) !important;
+  border-color: var(--sn-border-light) !important;
+}
+
+/* Search Bar (Pill when collapsed, clean 18px frosted-glass panel when expanded) */
+html.jsl-theme-on .c-search {
+  background: rgba(255, 255, 255, 0.075) !important;
+  border: 1px solid var(--sn-border) !important;
+  border-radius: 22px !important;
+  transition: background-color var(--sn-trans-fast), border-color var(--sn-trans-fast), box-shadow var(--sn-trans-fast), border-radius var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-search:hover {
+  background: rgba(255, 255, 255, 0.11) !important;
+  border-color: var(--sn-border-light) !important;
+}
+
+html.jsl-theme-on .c-search:focus-within,
+html.jsl-theme-on .c-search.active,
+html.jsl-theme-on .c-search.is-open,
+html.jsl-theme-on .c-search[class*="open"] {
+  background: rgba(13, 15, 21, 0.98) !important;
+  border-color: var(--sn-border-light) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--sn-shadow-floating) !important;
+  z-index: 200 !important;
+}
+
+/* Match results panel to the exact same opaque dark surface so page content never bleeds through */
+html.jsl-theme-on .c-search .c-search__list,
+html.jsl-theme-on .c-search .c-dropdown__content {
+  background: rgba(13, 15, 21, 0.98) !important;
+  border: 1px solid var(--sn-border-light) !important;
+  border-top: 1px solid var(--sn-border) !important;
+  border-radius: 0 0 16px 16px !important;
+  box-shadow: var(--sn-shadow-floating) !important;
+}
+
+html.jsl-theme-on .c-search input {
+  font-family: var(--sn-font) !important;
+  font-size: 13.5px !important;
+  color: var(--sn-text-primary) !important;
+  background: transparent !important;
+}
+
+html.jsl-theme-on .c-search input::placeholder {
+  color: var(--sn-text-muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Side Queue, Drawers, Dropdowns, Popovers & Modals (Complete Dark Overhaul)
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on .c-queue,
+html.jsl-theme-on .c-player__queue,
+html.jsl-theme-on .c-queue__panel,
+html.jsl-theme-on .c-drawer,
+html.jsl-theme-on .c-aside--right,
+html.jsl-theme-on [class*="c-queue"],
+html.jsl-theme-on [class*="queue-panel"],
+html.jsl-theme-on [id*="queue"] {
+  background: var(--sn-bg-surface-popover) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+  color: var(--sn-text-primary) !important;
+  border-color: var(--sn-border-light) !important;
+}
+
+/* Force ALL list rows and nested wrappers inside Queue / Drawers / Modals dark */
+html.jsl-theme-on .c-queue ul,
+html.jsl-theme-on .c-queue ol,
+html.jsl-theme-on .c-queue li,
+html.jsl-theme-on .c-queue div:not(.c-btn):not([role="button"]),
+html.jsl-theme-on .c-player__queue ul,
+html.jsl-theme-on .c-player__queue ol,
+html.jsl-theme-on .c-player__queue li,
+html.jsl-theme-on .c-player__queue div:not(.c-btn):not([role="button"]),
+html.jsl-theme-on [class*="c-queue"] ul,
+html.jsl-theme-on [class*="c-queue"] ol,
+html.jsl-theme-on [class*="c-queue"] li,
+html.jsl-theme-on [class*="c-queue"] .o-snippet,
+html.jsl-theme-on .c-drawer ul,
+html.jsl-theme-on .c-drawer li {
+  background-color: transparent !important;
+  color: var(--sn-text-primary) !important;
+  border-color: var(--sn-border) !important;
+}
+
+html.jsl-theme-on .c-queue li:hover,
+html.jsl-theme-on .c-player__queue li:hover,
+html.jsl-theme-on [class*="c-queue"] li:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.jsl-theme-on .c-queue__header,
+html.jsl-theme-on .c-drawer__header,
+html.jsl-theme-on .c-modal__header {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-bottom: 1px solid var(--sn-border) !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on .c-search__list,
+html.jsl-theme-on .c-dropdown__content,
+html.jsl-theme-on .c-dropdown__list,
+html.jsl-theme-on .c-popover,
+html.jsl-theme-on .c-menu,
+html.jsl-theme-on .c-modal__content,
+html.jsl-theme-on .o-modal__content,
+html.jsl-theme-on [role="menu"],
+html.jsl-theme-on [role="listbox"],
+html.jsl-theme-on [role="dialog"] {
+  background: var(--sn-bg-surface-popover) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  border: 1px solid var(--sn-border-light) !important;
+  border-radius: var(--sn-radius-lg) !important;
+  box-shadow: var(--sn-shadow-floating) !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on .c-search__list li,
+html.jsl-theme-on .c-search__list a,
+html.jsl-theme-on .c-dropdown__content li,
+html.jsl-theme-on .c-dropdown__content a,
+html.jsl-theme-on .c-dropdown__item,
+html.jsl-theme-on [role="menuitem"] {
+  color: var(--sn-text-primary) !important;
+  border-radius: var(--sn-radius-sm) !important;
+  transition: background-color var(--sn-trans-fast), color var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-search__list li:hover,
+html.jsl-theme-on .c-search__list a:hover,
+html.jsl-theme-on .c-dropdown__content li:hover,
+html.jsl-theme-on .c-dropdown__content a:hover,
+html.jsl-theme-on .c-dropdown__item:hover,
+html.jsl-theme-on [role="menuitem"]:hover {
+  background: var(--sn-bg-surface-hover) !important;
+  color: #ffffff !important;
+}
+
+/* Form inputs inside modals/settings */
+html.jsl-theme-on input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+html.jsl-theme-on select,
+html.jsl-theme-on textarea {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid var(--sn-border-light) !important;
+  color: var(--sn-text-primary) !important;
+  border-radius: var(--sn-radius-sm) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Left Sidebar Navigation (Spotify Modern Library View)
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on .c-aside--fixed {
+  background: var(--sn-bg-surface) !important;
+  border-right: 1px solid var(--sn-border) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.jsl-theme-on .c-aside .u-subhead,
+html.jsl-theme-on .c-aside h2,
+html.jsl-theme-on .c-aside h3 {
+  font-family: var(--sn-font) !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  color: var(--sn-text-muted) !important;
+  margin-top: 18px !important;
+  margin-bottom: 6px !important;
+}
+
+html.jsl-theme-on .c-aside a,
+html.jsl-theme-on .c-aside .c-nav__link {
+  font-family: var(--sn-font) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--sn-text-secondary) !important;
+  border-radius: var(--sn-radius-sm) !important;
+  padding: 7px 10px !important;
+  transition: color var(--sn-trans-fast), background-color var(--sn-trans-fast), transform var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-aside a:hover,
+html.jsl-theme-on .c-aside .c-nav__link:hover {
+  color: #ffffff !important;
+  background: var(--sn-bg-surface-hover) !important;
+  transform: translateX(3px) !important;
+}
+
+html.jsl-theme-on .c-aside a.active,
+html.jsl-theme-on .c-aside .c-nav__link.active {
+  color: var(--sn-accent-active) !important;
+  font-weight: 600 !important;
+  background: color-mix(in srgb, var(--sn-accent-active) 14%, transparent) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Grids, Cards, Hero & Tracklists
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on .o-layout,
+html.jsl-theme-on .c-grid {
+  gap: clamp(14px, 1.6vw, 22px) !important;
+}
+
+html.jsl-theme-on .c-card,
+html.jsl-theme-on .o-block {
+  background: var(--sn-bg-glass-card) !important;
+  border: 1px solid var(--sn-border) !important;
+  border-radius: var(--sn-radius-md) !important;
+  box-shadow: var(--sn-shadow-card) !important;
+  transition: transform var(--sn-trans-medium), background-color var(--sn-trans-medium), border-color var(--sn-trans-medium), box-shadow var(--sn-trans-medium) !important;
+}
+
+html.jsl-theme-on .c-card:hover,
+html.jsl-theme-on .o-block:hover {
+  background: var(--sn-bg-glass-card-hover) !important;
+  border-color: var(--sn-border-light) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: var(--sn-shadow-card-hover) !important;
+}
+
+html.jsl-theme-on .o-snippet,
+html.jsl-theme-on .c-song {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+  transition: background-color var(--sn-trans-fast), border-color var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .o-snippet:hover,
+html.jsl-theme-on .c-song:hover {
+  background: rgba(255, 255, 255, 0.065) !important;
+  border-color: var(--sn-border) !important;
+}
+
+html.jsl-theme-on .c-card img,
+html.jsl-theme-on .o-block img,
+html.jsl-theme-on .o-snippet img,
+html.jsl-theme-on .o-flag__img img {
+  border-radius: var(--sn-radius-sm) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45) !important;
+  transition: transform var(--sn-trans-medium) !important;
+}
+
+html.jsl-theme-on .c-card:hover img,
+html.jsl-theme-on .o-block:hover img {
+  transform: scale(1.03) !important;
+}
+
+html.jsl-theme-on .o-snippet__time,
+html.jsl-theme-on .c-player__time {
+  font-variant-numeric: tabular-nums !important;
+  color: var(--sn-text-muted) !important;
+}
+
+/* Buttons & Pills */
+html.jsl-theme-on .c-btn {
+  font-family: var(--sn-font) !important;
+  font-weight: 600 !important;
+  border-radius: var(--sn-radius-pill) !important;
+  transition: transform var(--sn-trans-fast), background-color var(--sn-trans-fast), border-color var(--sn-trans-fast), box-shadow var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-btn:active {
+  transform: scale(0.96) !important;
+}
+
+html.jsl-theme-on .c-btn--primary {
+  background: var(--sn-accent-teal) !important;
+  border-color: transparent !important;
+  color: #06120f !important;
+  box-shadow: 0 6px 20px -4px var(--sn-glow-teal) !important;
+}
+
+html.jsl-theme-on .c-btn--primary:hover {
+  filter: brightness(1.08) !important;
+  transform: scale(1.03) !important;
+}
+
+html.jsl-theme-on .c-btn--secondary,
+html.jsl-theme-on .c-btn--tertiary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--sn-border-light) !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on .c-btn--secondary:hover,
+html.jsl-theme-on .c-btn--tertiary:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Tabs & Filter Pills */
+html.jsl-theme-on .c-tab__link,
+html.jsl-theme-on .c-nav--tabs .c-nav__link {
+  font-family: var(--sn-font) !important;
+  font-weight: 600 !important;
+  color: var(--sn-text-secondary) !important;
+  border-radius: var(--sn-radius-pill) !important;
+  transition: color var(--sn-trans-fast), background-color var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-tab__link.active,
+html.jsl-theme-on .c-nav--tabs .c-nav__link.active {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Bottom Player Bar (Spotify Ergonomics + Apple Music Glass)
+   -------------------------------------------------------------------------- */
+html.jsl-theme-on .c-player__panel {
+  background: var(--sn-bg-glass-player) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  border-top: 1px solid var(--sn-border-light) !important;
+  box-shadow: var(--sn-shadow-dock) !important;
+  color: var(--sn-text-primary) !important;
+}
+
+html.jsl-theme-on .c-player__current img {
+  border-radius: 8px !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55) !important;
+  transition: transform var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-player__current img:hover {
+  transform: scale(1.04) !important;
+}
+
+html.jsl-theme-on .c-player__current a,
+html.jsl-theme-on .c-player__current span,
+html.jsl-theme-on .c-player__current p {
+  font-family: var(--sn-font) !important;
+}
+
+html.jsl-theme-on .c-player__controls {
+  background: transparent !important;
+}
+
+/* Secondary transport buttons (Repeat, Prev, Next, Shuffle) — NEVER white circle */
+html.jsl-theme-on .c-player__btn,
+html.jsl-theme-on .c-player__btn--shift {
+  background: transparent !important;
+  color: var(--sn-text-secondary) !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+  transition: color var(--sn-trans-fast), background-color var(--sn-trans-fast), transform var(--sn-trans-fast) !important;
+}
+
+html.jsl-theme-on .c-player__btn:hover,
+html.jsl-theme-on .c-player__btn--shift:hover {
+  color: #ffffff !important;
+  background: var(--sn-bg-surface-hover) !important;
+  transform: scale(1.08) !important;
+}
+
+html.jsl-theme-on .c-player__btn:active,
+html.jsl-theme-on .c-player__btn--shift:active {
+  transform: scale(0.94) !important;
+}
+
+/* ONLY the Play / Pause button gets the white hero circle with dark icon */
+html.jsl-theme-on .c-player__btn-play,
+html.jsl-theme-on .c-player__btn-pause,
+html.jsl-theme-on .c-player__controls .c-player__btn:has(.o-icon-play),
+html.jsl-theme-on .c-player__controls .c-player__btn:has(.o-icon-pause),
+html.jsl-theme-on .c-player__controls button[aria-label="Play"],
+html.jsl-theme-on .c-player__controls button[aria-label="Pause"] {
+  background: #ffffff !important;
+  color: #090a0e !important;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.28) !important;
+}
+
+html.jsl-theme-on .c-player__btn-play *,
+html.jsl-theme-on .c-player__btn-pause *,
+html.jsl-theme-on .c-player__controls .c-player__btn:has(.o-icon-play) *,
+html.jsl-theme-on .c-player__controls .c-player__btn:has(.o-icon-pause) *,
+html.jsl-theme-on .c-player__controls button[aria-label="Play"] *,
+html.jsl-theme-on .c-player__controls button[aria-label="Pause"] * {
+  color: #090a0e !important;
+  fill: #090a0e !important;
+}
+
+html.jsl-theme-on .c-player__btn-play:hover,
+html.jsl-theme-on .c-player__btn-pause:hover,
+html.jsl-theme-on .c-player__controls .c-player__btn:has(.o-icon-play):hover,
+html.jsl-theme-on .c-player__controls .c-player__btn:has(.o-icon-pause):hover,
+html.jsl-theme-on .c-player__controls button[aria-label="Play"]:hover,
+html.jsl-theme-on .c-player__controls button[aria-label="Pause"]:hover {
+  background: #ffffff !important;
+  color: #090a0e !important;
+  transform: scale(1.09) !important;
+  box-shadow: 0 6px 22px rgba(255, 255, 255, 0.42) !important;
+}
+
+/* Interactive Progress Bar */
+html.jsl-theme-on .c-progress {
+  transition: height var(--sn-trans-fast) !important;
+}
+html.jsl-theme-on .c-progress__seek {
+  background: var(--sn-accent-gradient) !important;
+  box-shadow: 0 0 10px rgba(30, 215, 96, 0.42) !important;
+}
+html.jsl-theme-on .c-progress__knob {
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+  transition: transform var(--sn-trans-fast) !important;
+}
+html.jsl-theme-on .c-progress:hover .c-progress__knob {
+  transform: scale(1.25) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Integrated Lyrics Button in Player Dock
+   -------------------------------------------------------------------------- */
+.jsl-player-lyrics-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--sn-text-secondary) !important;
+  cursor: pointer !important;
+  transition: color var(--sn-trans-fast), background-color var(--sn-trans-fast), border-color var(--sn-trans-fast), transform var(--sn-trans-fast), box-shadow var(--sn-trans-fast) !important;
+  margin-left: 4px !important;
+}
+
+.jsl-player-lyrics-btn:hover {
+  color: #ffffff !important;
+  background: var(--sn-bg-surface-hover) !important;
+  transform: scale(1.08) !important;
+}
+
+.jsl-player-lyrics-btn:active {
+  transform: scale(0.94) !important;
+}
+
+.jsl-player-lyrics-btn.is-active,
+.jsl-player-lyrics-btn[aria-pressed="true"] {
+  color: var(--sn-accent-active) !important;
+  background: color-mix(in srgb, var(--sn-accent-active) 16%, transparent) !important;
+  border-color: color-mix(in srgb, var(--sn-accent-active) 38%, transparent) !important;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--sn-accent-active) 35%, transparent) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html.jsl-open body,
+  html:not(.jsl-open) body,
+  html.jsl-theme-on .c-card,
+  html.jsl-theme-on .o-block,
+  html.jsl-theme-on .c-card img,
+  html.jsl-theme-on .o-block img,
+  html.jsl-theme-on .c-player__btn,
+  html.jsl-theme-on .c-aside a,
+  .jsl-player-lyrics-btn {
+    transition: none !important;
+  }
+}

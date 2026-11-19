@@ -1,0 +1,365 @@
+/* Registered so the cover colours cross-fade smoothly when the song changes. */
+@property --jsl-base   { syntax: "<color>"; inherits: true; initial-value: #0e1d20; }
+@property --jsl-glow1  { syntax: "<color>"; inherits: true; initial-value: #1f7d73; }
+@property --jsl-glow2  { syntax: "<color>"; inherits: true; initial-value: #1c5a6e; }
+@property --jsl-accent { syntax: "<color>"; inherits: true; initial-value: #2bc5b4; }
+
+:root {
+  --jsl-w: 380px;
+  --jsl-top: 0px;
+  --jsl-bottom: 0px;
+  --jsl-ink: #ffffff;
+  --jsl-dim: rgba(255, 255, 255, 0.66);
+  --jsl-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", Georgia, serif;
+  --jsl-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", system-ui, sans-serif;
+  --jsl-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: --jsl-base 0.9s ease, --jsl-glow1 0.9s ease, --jsl-glow2 0.9s ease, --jsl-accent 0.9s ease;
+}
+
+/* Squeeze the site so the panel sits beside it instead of covering it. */
+html.jsl-open body {
+  width: calc(100% - var(--jsl-w)) !important;
+}
+
+#jsl-panel,
+#jsl-tab {
+  font-family: var(--jsl-sans);
+  box-sizing: border-box;
+}
+#jsl-panel *,
+#jsl-panel *::before,
+#jsl-panel *::after {
+  box-sizing: border-box;
+}
+
+/* The glass: two glows pulled from the cover over a deep base of the same hue,
+   with a faint specular sheen across the top-left edge. */
+#jsl-panel {
+  position: fixed;
+  right: 0;
+  top: var(--jsl-top);
+  bottom: var(--jsl-bottom);
+  width: var(--jsl-w);
+  z-index: 2147483000;
+  display: none;
+  flex-direction: column;
+  isolation: isolate;
+  overflow: hidden;
+  color: var(--jsl-ink);
+  background:
+    radial-gradient(130% 65% at 0% 0%, color-mix(in srgb, var(--jsl-glow1) 78%, transparent), transparent 64%),
+    radial-gradient(110% 60% at 100% 100%, color-mix(in srgb, var(--jsl-glow2) 72%, transparent), transparent 66%),
+    var(--jsl-base);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.06),
+    -18px 0 48px -16px rgba(0, 0, 0, 0.72);
+}
+
+#jsl-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.025) 28%, transparent 46%);
+}
+
+html.jsl-open #jsl-panel {
+  display: flex;
+  animation: jsl-panel-in 0.28s var(--jsl-ease);
+}
+
+@keyframes jsl-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Drag handle on the panel's left edge. */
+.jsl-resizer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  z-index: 3;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.jsl-resizer::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 3px;
+  height: 48px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0);
+  transition: background-color 0.2s;
+}
+.jsl-resizer:hover::after,
+.jsl-resizer:focus-visible::after,
+html.jsl-resizing .jsl-resizer::after {
+  background: rgba(255, 255, 255, 0.45);
+}
+.jsl-resizer:focus-visible { outline: none; }
+html.jsl-resizing { cursor: ew-resize !important; user-select: none !important; }
+html.jsl-resizing iframe { pointer-events: none !important; }
+
+.jsl-toast {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--jsl-ink);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.65);
+}
+.jsl-toast[hidden] { display: none; }
+
+/* Header with album art thumbnail + metadata + tools */
+.jsl-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 12px 14px 18px;
+  background: rgba(12, 13, 18, 0.48);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.jsl-head-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1;
+}
+
+.jsl-art {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+.jsl-art[hidden] { display: none; }
+
+.jsl-meta { min-width: 0; flex: 1; }
+.jsl-title,
+.jsl-artist {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jsl-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.jsl-artist {
+  font-size: 12.5px;
+  color: var(--jsl-dim);
+  line-height: 1.35;
+}
+
+.jsl-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.jsl-offset {
+  min-width: 42px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--jsl-dim);
+  font-variant-numeric: tabular-nums;
+}
+.jsl-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font: 500 17px/1 var(--jsl-sans);
+  color: var(--jsl-ink);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.18s var(--jsl-ease), transform 0.15s var(--jsl-ease);
+}
+.jsl-btn:hover { background: rgba(255, 255, 255, 0.16); }
+.jsl-btn:active { transform: scale(0.92); }
+.jsl-btn[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+.jsl-btn:focus-visible,
+.jsl-line:focus-visible,
+#jsl-tab:focus-visible {
+  outline: 2px solid var(--jsl-accent);
+  outline-offset: 2px;
+}
+
+.jsl-body {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 90%, transparent 100%);
+}
+
+/* Room above and below so the first and last lines can sit in the middle. */
+.jsl-lines { list-style: none; margin: 0; padding: 38vh 0; }
+.jsl-lines:empty { padding: 0; }
+
+.jsl-line {
+  display: block;
+  width: 100%;
+  margin: 3px 0;
+  padding: 9px 14px;
+  font: 550 21px/1.38 var(--jsl-sans);
+  letter-spacing: -0.015em;
+  text-align: left;
+  color: var(--jsl-ink);
+  opacity: 0.48;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  cursor: pointer;
+  transform-origin: left center;
+  transition:
+    opacity 0.28s var(--jsl-ease),
+    transform 0.3s var(--jsl-ease),
+    background-color 0.25s var(--jsl-ease),
+    border-color 0.25s var(--jsl-ease),
+    box-shadow 0.25s var(--jsl-ease);
+}
+
+.jsl-line:hover {
+  opacity: 0.9;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* The current line is a small pane of frosted glass. */
+.jsl-line.jsl-active {
+  opacity: 1;
+  font-weight: 700;
+  transform: scale(1.025);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 10px 28px -10px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  backdrop-filter: blur(14px) saturate(1.6);
+}
+
+.jsl-lines.jsl-unsynced { padding: 16px 0 48px; }
+.jsl-plain {
+  padding: 3px 14px;
+  font: 400 16.5px/1.55 var(--jsl-sans);
+  color: var(--jsl-ink);
+  opacity: 0.9;
+  cursor: default;
+}
+
+.jsl-status {
+  margin: 0;
+  padding: 28px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--jsl-dim);
+}
+.jsl-status[hidden] { display: none; }
+
+/* Sleek Frosted Floating Tab (Authoritative single definition) */
+#jsl-tab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  display: none;
+  padding: 12px 8px 14px 9px;
+  writing-mode: vertical-rl;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: rgba(16, 17, 23, 0.88);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  box-shadow:
+    -4px 0 20px -2px rgba(0, 0, 0, 0.6),
+    inset 2px 0 0 0 var(--jsl-accent, #2bc5b4);
+  cursor: pointer;
+  transition:
+    transform 0.25s var(--jsl-ease),
+    background-color 0.25s var(--jsl-ease),
+    box-shadow 0.25s var(--jsl-ease),
+    color 0.25s var(--jsl-ease);
+}
+
+html:not(.jsl-open) #jsl-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#jsl-tab:hover {
+  transform: translateY(-50%) translateX(-4px);
+  background: rgba(24, 26, 34, 0.96);
+  color: var(--jsl-accent, #2bc5b4);
+  box-shadow:
+    -6px 0 28px color-mix(in srgb, var(--jsl-accent, #2bc5b4) 40%, transparent),
+    inset 3px 0 0 0 var(--jsl-accent, #2bc5b4);
+}
+
+#jsl-tab svg {
+  transform: rotate(90deg);
+  margin-bottom: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { transition: none; }
+  html.jsl-open #jsl-panel { animation: none; }
+  .jsl-line,
+  .jsl-btn,
+  #jsl-tab { transition: none; }
+}
+
+@media (max-width: 760px) {
+  html.jsl-open body { width: 100% !important; }
+  #jsl-panel { width: min(var(--jsl-w), 100vw); }
+}

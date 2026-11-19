@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Saavn Modern</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="pop">
+    <header class="pop-head">
+      <div class="pop-brand">
+        <span class="pop-dot" aria-hidden="true"></span>
+        <div>
+          <h1 class="pop-title">Saavn Modern</h1>
+          <p class="pop-sub">Spotify &amp; Apple Music UI + Lyrics</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="pop-card" aria-label="Appearance settings">
+      <label class="pop-row">
+        <span class="pop-label">
+          <strong>Modern UI Overhaul</strong>
+          <small>Sleek dark glass, typography &amp; spacing</small>
+        </span>
+        <input type="checkbox" id="pref-theme" class="pop-switch" checked />
+      </label>
+
+      <label class="pop-row">
+        <span class="pop-label">
+          <strong>Cover-Art Ambiance</strong>
+          <small>Dynamic album glow behind player</small>
+        </span>
+        <input type="checkbox" id="pref-ambiance" class="pop-switch" checked />
+      </label>
+
+      <label class="pop-row">
+        <span class="pop-label">
+          <strong>Hide Ads &amp; Clutter</strong>
+          <small>Remove promo banners &amp; app nags</small>
+        </span>
+        <input type="checkbox" id="pref-clean" class="pop-switch" checked />
+      </label>
+    </section>
+
+    <div class="pop-actions">
+      <button type="button" id="btn-lyrics" class="pop-btn pop-btn-primary">Toggle Lyrics Panel</button>
+    </div>
+
+    <footer class="pop-foot">
+      <span>Shortcut: <kbd>L</kbd> toggles lyrics</span>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
